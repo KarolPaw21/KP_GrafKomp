@@ -118,37 +118,34 @@
     graphics.restore();
     }
 
-
-    //------------------- Some methods for drawing basic shapes. ----------------
-    
-    function line() { // Draws a line from (-0.5,0) to (0.5,0)
+    function line() { 
         graphics.beginPath();
         graphics.moveTo(-0.5,0);
         graphics.lineTo(0.5,0);
         graphics.stroke();
     }
 
-    function rect() { // Strokes a square, size = 1, center = (0,0)
+    function rect() { 
         graphics.strokeRect(-0.5,-0.5,1,1);
     }
 
-    function filledRect() { // Fills a square, size = 1, center = (0,0)
+    function filledRect() { 
         graphics.fillRect(-0.5,-0.5,1,1);
     }
 
-    function circle() { // Strokes a circle, diameter = 1, center = (0,0)
+    function circle() { 
         graphics.beginPath();
         graphics.arc(0,0,0.5,0,2*Math.PI);
         graphics.stroke();
     }
 
-    function filledCircle() { // Fills a circle, diameter = 1, center = (0,0)
+    function filledCircle() { 
         graphics.beginPath();
         graphics.arc(0,0,0.5,0,2*Math.PI);
         graphics.fill();
     }
 
-	function filledTriangle(g2) {// Filled Triangle, width 1, height 1, center of base at (0,0)
+	function filledTriangle(g2) {
 		g2.beginPath();
 		g2.moveTo(-0.5,0);
 		g2.lineTo(0.5,0);
