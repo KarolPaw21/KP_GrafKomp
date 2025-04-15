@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Scene Graph 2D</title>
+<title>Subroutine Hieararchy</title>
 
 <script>
 
@@ -21,22 +20,30 @@
             
     var frameNumber = 0;  // Current frame number. goes up by one in each frame.
 
-    var world;  // A SceneGraphNode representing the entire scene. 
-    
-    // TODO: Define global variables to represent animated objects in the scene.
-    var rotatingRect;  // (DELETE THIS EXAMPLE)
+    // TODO:  Define any other necessary state variables.
     
     /**
-     *  Builds the data structure that represents the entire picture.
+     *  Responsible for drawing the entire scene.  The display is filled with the background
+     *  color before this function is called.
      */
-    function createWorld() {
+    function drawWorld() {
 
-        world = new CompoundObject();  // Root node for the scene graph.
+        // TODO: Draw the content of the scene.
+        graphics.translate(0,-0.8);
+        swing("blue");
 
-        // TODO: Create objects and add them to the scene graph.
-        rotatingRect = new TransformedObject(filledRect);   // (DELETE THIS EXAMPLE)
-        rotatingRect.setScale(2,2).setColor("red"); 
-        world.add(rotatingRect);
+
+        graphics.save();
+        graphics.translate(-2,2.5);
+        graphics.scale(0.8,0.9);
+        swing("purple");
+        graphics.restore();
+
+
+        graphics.translate(2,2.5);
+        graphics.scale(0.6,0.6);
+        swing("green");
+
     }
     
     /**
@@ -45,180 +52,113 @@
      */
     function updateFrame() {
         frameNumber++;
-
-        // TODO: Update state in preparation for drawing the next frame.
-        rotatingRect.setRotation(frameNumber*0.75); // (DELETE THIS EXAMPLE)
-        
+        // TODO: If other updates are needed for the next frame, do them here.
     }
  
+ 
+     // TODO: Define methods for drawing the objects in the scene.
 
-    //------------------- A Simple Scene Object-Oriented Scene Graph API ----------------
-    
-    /**
-     * The (abstract) base class for all nodes in the scene graph data structure.
-     */
-    function SceneGraphNode() {
-        this.fillColor = null;   // If non-null, the default fillStyle for this node.
-        this.strokeColor = null; // If non-null, the default strokeStyle for this node.
+    function swing(color){
+        bar();
+        baseTriangle(color);
     }
-    SceneGraphNode.prototype.doDraw = function(g) {
-            // This method is meant to be abstract and must be OVERRIDDEN in an actual
-            // object. It is not meant to be called; it is called by draw().
-        throw "doDraw not implemented in SceneGraphNode"
-    }
-    SceneGraphNode.prototype.draw = function(g) {
-           // This method should be CALLED to draw the object It should NOT
-           // ordinarily be overridden in subclasses.
+
+    function bar(x,y){
         graphics.save();
-        if (this.fillColor) {
-            g.fillStyle = this.fillColor;
-        }
-        if (this.strokeColor) {
-            g.strokeStyle = this.strokeColor;
-        }
-        this.doDraw(g);
+        graphics.fillStyle = "red";
+        graphics.rotate(-10 * (Math.PI / 180));
+        rotatingShape(7, 1.45, 0, 1);
+        rotatingShape(7, -1.45, 0, -1);
+        graphics.fillRect(-1.5,-0.1, 3, 0.2);
         graphics.restore();
     }
-    SceneGraphNode.prototype.setFillColor = function(color) {
-            // Sets fillColor for this node to color.
-            // Color should be a legal CSS color string, or null.
-        this.fillColor = color;
-        return this;
-    }
-    SceneGraphNode.prototype.setStrokeColor = function(color) {
-            // Sets strokeColor for this node to color.
-            // Color should be a legal CSS color string, or null.
-        this.strokeColor = color;
-        return this;
-    }
-    SceneGraphNode.prototype.setColor = function(color) {
-            // Sets both the fillColor and strokeColor to color.
-            // Color should be a legal CSS color string, or null.
-        this.fillColor = color;
-        this.strokeColor = color;
-        return this;
-    }
+
     
-    /**
-     *  Defines a subclass, CompoundObject, of SceneGraphNode to represent
-     *  an object that is made up of sub-objects.  Initially, there are no
-     *  sub-objects.  Objects are added with the add() method.
-     */
-    function CompoundObject() {
-        SceneGraphNode.call(this);  // do superclass initialization
-        this.subobjects = [];  // the list of sub-objects of this object
+
+    function baseTriangle(color) {
+    graphics.fillStyle = color;
+    graphics.beginPath()
+    graphics.moveTo(-0.25, -1.5);
+    graphics.lineTo(0.25, -1.5);
+    graphics.lineTo(0, 0);
+    graphics.closePath();
+     graphics.fill();
     }
-    CompoundObject.prototype = new SceneGraphNode(); // (makes it a subclass!)
-    CompoundObject.prototype.add = function(node) {
-        this.subobjects.push(node);
-        return this;
-    }
-    CompoundObject.prototype.doDraw = function(g) {
-            // Just call the sub-objects' draw() methods.
-        for (var i = 0; i < this.subobjects.length; i++)
-            this.subobjects[i].draw(g);
-    }
-    
-    /**
-     *  Define a subclass, TransformedObject, of SceneGraphNode that
-     *  represents an object along with a modeling transformation to
-     *  be applied to that object.  The object must be specified in
-     *  the constructor.  The transformation is specified by calling
-     *  the setScale(), setRotate() and setTranslate() methods. Note that
-     *  each of these methods returns a reference to the TransformedObject
-     *  as its return value, to allow for chaining of method calls.
-     *  The modeling transformations are always applied to the object
-     *  in the order scale, then rotate, then translate.
-     */
-    function TransformedObject(object) {
-        SceneGraphNode.call(this);  // do superclass initialization
-        this.object = object;
-        this.rotationInDegrees = 0;
-        this.scaleX = 1;
-        this.scaleY = 1;
-        this.translateX = 0;
-        this.translateY = 0;
-    }
-    TransformedObject.prototype = new SceneGraphNode();  // (makes it a subclass!)
-    TransformedObject.prototype.setRotation = function(angle) {
-           // Set the angle of rotation, measured in DEGREES.  The rotation
-           // is always about the origin.
-        this.rotationInDegrees = angle;
-        return this;
-    }
-    TransformedObject.prototype.setScale = function(sx, sy) {
-           // Sets scaling factors.
-        this.scaleX = sx;
-        this.scaleY = sy;
-        return this;
-    }
-    TransformedObject.prototype.setTranslation = function(dx,dy) {
-           // Set translation mounts.
-        this.translateX = dx;
-        this.translateY = dy;
-        return this;
-    }
-    TransformedObject.prototype.doDraw = function(g) {
-            // Draws the object, with its modeling transformation.
-        g.save();
-        if (this.translateX != 0 || this.translateY != 0) {
-            g.translate(this.translateX, this.translateY);
+    function rotatingShape(vertices, x, y, direction) { 
+    graphics.save();
+    graphics.translate(x, y);
+    graphics.rotate(direction * (frameNumber * 0.75) * Math.PI / 180 );
+
+    // Rysowanie samego siedmiokąta
+    graphics.beginPath();
+    for (let i = 0; i < vertices; i++) {
+        let angle = i * 2 * Math.PI / vertices;
+        let px = 0.5 * Math.cos(angle);
+        let py = 0.5 * Math.sin(angle);
+        if (i === 0) {
+            graphics.moveTo(px, py);
+        } else {
+            graphics.lineTo(px, py);
         }
-        if (this.rotationInDegrees != 0) {
-            g.rotate(this.rotationInDegrees/180*Math.PI);
-        }
-        if (this.scaleX != 1 || this.scaleY != 1) {
-            g.scale(this.scaleX, this.scaleY);
-        }
-        this.object.draw(g);
-        g.restore();
     }
-    
-           // Create some basic shapes as custom SceneGraphNode objects.
-           
-    var line = new SceneGraphNode();  // Line from (-0.5,0) to (0.5,0)
-    line.doDraw = function(g) {
-        g.beginPath();
-        g.moveTo(-0.5,0);
-        g.lineTo(0.5,0);
-        g.stroke();
+    graphics.closePath();
+    graphics.stroke();
+
+    // Rysowanie linii od środka do każdego wierzchołka
+    for (let i = 0; i < vertices; i++) {
+        let angle = i * 2 * Math.PI / vertices;
+        let px = 0.5 * Math.cos(angle);
+        let py = 0.5 * Math.sin(angle);
+        graphics.beginPath();
+        graphics.moveTo(0, 0);
+        graphics.lineTo(px, py);
+        graphics.stroke();
     }
-    
-    var filledRect = new SceneGraphNode();  // Filled square, size = 1, center = (0,0)
-    filledRect.doDraw = function(g) {
-        g.fillRect(-0.5,-0.5,1,1);
+
+    graphics.restore();
     }
+
+
+    //------------------- Some methods for drawing basic shapes. ----------------
     
-    var rect = new SceneGraphNode(); // Stroked square, size = 1, center = (0,0)
-    rect.doDraw = function(g) {
-        g.strokeRect(-0.5,-0.5,1,1);
+    function line() { // Draws a line from (-0.5,0) to (0.5,0)
+        graphics.beginPath();
+        graphics.moveTo(-0.5,0);
+        graphics.lineTo(0.5,0);
+        graphics.stroke();
     }
-    
-    var filledCircle = new SceneGraphNode(); // Filled circle, diameter = 1, center = (0,0)
-    filledCircle.doDraw = function(g) {
-        g.beginPath();
-        g.arc(0,0,0.5,0,2*Math.PI);
-        g.fill();
+
+    function rect() { // Strokes a square, size = 1, center = (0,0)
+        graphics.strokeRect(-0.5,-0.5,1,1);
     }
-    
-    var circle = new SceneGraphNode();// Stroked circle, diameter = 1, center = (0,0)
-    circle.doDraw = function(g) {
-        g.beginPath();
-        g.arc(0,0,0.5,0,2*Math.PI);
-        g.stroke();
+
+    function filledRect() { // Fills a square, size = 1, center = (0,0)
+        graphics.fillRect(-0.5,-0.5,1,1);
     }
-    
-    var filledTriangle = new SceneGraphNode(); // Filled Triangle, width 1, height 1, center of base at (0,0)
-    filledTriangle.doDraw = function(g) {
-        g.beginPath();
-        g.moveTo(-0.5,0);
-        g.lineTo(0.5,0);
-        g.lineTo(0,1);
-        g.closePath();
-        g.fill();
-    }   
-    
-   
+
+    function circle() { // Strokes a circle, diameter = 1, center = (0,0)
+        graphics.beginPath();
+        graphics.arc(0,0,0.5,0,2*Math.PI);
+        graphics.stroke();
+    }
+
+    function filledCircle() { // Fills a circle, diameter = 1, center = (0,0)
+        graphics.beginPath();
+        graphics.arc(0,0,0.5,0,2*Math.PI);
+        graphics.fill();
+    }
+
+	function filledTriangle(g2) {// Filled Triangle, width 1, height 1, center of base at (0,0)
+		g2.beginPath();
+		g2.moveTo(-0.5,0);
+		g2.lineTo(0.5,0);
+		g2.lineTo(0,1);
+		g2.closePath();
+		g2.fill();
+	}
+
+ 
+
     
     // ------------------------------- graphics support functions --------------------------
     
@@ -233,7 +173,7 @@
         graphics.fillStyle = "black";
         applyLimits(graphics,X_LEFT,X_RIGHT,Y_TOP,Y_BOTTOM,false);
         graphics.lineWidth = pixelSize;  // Use 1 pixel as the default line width
-        world.draw(graphics);
+        drawWorld();
         graphics.restore();
     }
     
@@ -302,7 +242,6 @@
         graphics = canvas.getContext("2d");
         document.getElementById("animateCheck").checked = false; 
         document.getElementById("animateCheck").onchange = doAnimationCheckbox; 
-        createWorld();
         draw();
     }
 
@@ -312,7 +251,7 @@
 
 <body onload="init()" style="background-color:#EEEEEE">
 
-<h3>Scene Graph 2D</h3>
+<h3>Subroutine Hierarchy</h3>
 
 <noscript>
    <p><b style="color:red">Error: This page requires JavaScript, but it is not available.</b></p>
