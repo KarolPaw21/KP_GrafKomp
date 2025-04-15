@@ -35,13 +35,43 @@
      *  actions are not necessary in this program, since the function will
      *  only be called once.)
      */
-    function draw() {
+     function draw() {
+    graphics.clearRect(0, 0, 600, 600);
     
-        graphics.clearRect(0,0,600,600);
-        
-        
-        
-    } // end of draw()
+    graphics.save();
+
+    // Przesunięcie układu do środka prostokąta
+    graphics.translate(300, 260); // środek prostokąta: (200+100, 200+60)
+    graphics.rotate(Math.PI / 60); // obrót o 3 stopnie w prawo (w radianach)
+    
+    // Rysowanie figury względem nowego środka
+    // Prostokąt (ciało postaci)
+    graphics.fillStyle = "cyan";
+    graphics.fillRect(-100, -60, 200, 120); // przesunięty względem środka
+
+    // Czarny obwód wokół prostokąta
+    graphics.strokeStyle = "black";
+    graphics.lineWidth = 3;
+    graphics.strokeRect(-100, -60, 200, 120);
+
+    // Oczy (białe)
+    graphics.fillStyle = "white";
+    graphics.fillCircle(-50, -10, 20);
+    graphics.fillCircle(50, -10, 20);
+
+    // Źrenice
+    graphics.fillStyle = "black";
+    graphics.fillCircle(-50, -10, 8);
+    graphics.fillCircle(50, -10, 8);
+
+    // Usta
+    graphics.strokeStyle = "black";
+    graphics.lineWidth = 3;
+    graphics.strokeLine(-15, 30, 15, 30);
+
+    graphics.restore();
+
+    } //End of draw()
     
     
     /**
