@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Texture Transform</title>
+  <style>
+    canvas { width: 50%; height: 60%; display: block; background: #111; }
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+  </style>
+</head>
+<body>
+<canvas id="glcanvas"></canvas>
+
+<script type="module">
+import { mat4 } from 'https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/esm/index.js';
+
+const canvas = document.getElementById('glcanvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const gl = canvas.getContext('webgl');
+if (!gl) {
+  alert('WebGL not supported');
+}
+
+const vsSource = `
+  attribute vec3 aPosition;
+  attribute vec2 aTexCoord;
+  uniform mat4 uMVP;
+  varying vec2 vTexCoord;
+  void main() {
+    gl_Position = uMVP * vec4(aPosition, 1.0);
+    vTexCoord = aTexCoord;
+  }
+`;
+
+const fsSource = `
+  precision mediump float;
+  varying vec2 vTexCoord;
+  uniform sampler2D uTexture;
+  void main() {
+    gl_FragColor = texture2D(uTexture, vTexCoord);
+  }
+`;
+
+function createShader(gl, source, type) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(shader));
+    return null;
+  }
+  return shader;
+}
+
+const vertexShader = createShader(gl, vsSource, gl.VERTEX_SHADER);
+const fragmentShader = createShader(gl, fsSource, gl.FRAGMENT_SHADER);
+
+const program = gl.createProgram();
+gl.attachShader(program, vertexShader);
+gl.attachShader(program, fragmentShader);
+gl.linkProgram(program);
+gl.useProgram(program);
+
+// Pyramid geometry
+const positions = new Float32Array([
+  // base
+  -1, 0, -1,   1, 0, -1,   1, 0, 1,   -1, 0, 1,
+  // tip
+  0, 1.5, 0
+]);
+
+const indices = new Uint16Array([
+  0, 1, 2, 0, 2, 3,     // base
+  0, 1, 4,
+  1, 2, 4,
+  2, 3, 4,
+  3, 0, 4
+]);
+
+const texCoords = new Float32Array([
+  0, 0,  1, 0,  1, 1,  0, 1,
+  0.5, 0
+]);
+
+// Buffers
+const posBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+const aPosition = gl.getAttribLocation(program, "aPosition");
+gl.enableVertexAttribArray(aPosition);
+gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+
+const texBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
+gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.STATIC_DRAW);
+const aTexCoord = gl.getAttribLocation(program, "aTexCoord");
+gl.enableVertexAttribArray(aTexCoord);
+gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 0, 0);
+
+const indexBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+const uMVP = gl.getUniformLocation(program, "uMVP");
+
+// Load local texture
+const texture = gl.createTexture();
+const image = new Image();
+image.src = 'metal003.gif'; // <- ścieżka do lokalnego pliku
+image.onload = () => {
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  render();
+};
+
+// User interaction
+let rotationX = 0;
+let rotationY = 0;
+let dragging = false;
+let lastX, lastY;
+
+canvas.addEventListener("mousedown", e => {
+  dragging = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
+});
+
+canvas.addEventListener("mousemove", e => {
+  if (!dragging) return;
+  let dx = e.clientX - lastX;
+  let dy = e.clientY - lastY;
+  rotationY += dx * 0.01;
+  rotationX += dy * 0.01;
+  lastX = e.clientX;
+  lastY = e.clientY;
+  render();
+});
+
+canvas.addEventListener("mouseup", () => dragging = false);
+canvas.addEventListener("mouseleave", () => dragging = false);
+
+// MVP matrix
+function getMVP() {
+  const proj = mat4.create();
+  mat4.perspective(proj, Math.PI / 4, canvas.width / canvas.height, 0.1, 100);
+
+  const view = mat4.create();
+  mat4.translate(view, view, [0, -0.5, -4]);
+  mat4.rotateX(view, view, rotationX);
+  mat4.rotateY(view, view, rotationY);
+
+  const mvp = mat4.create();
+  mat4.multiply(mvp, proj, view);
+  return mvp;
+}
+
+// Render once
+function render() {
+  gl.clearColor(0.1, 0.1, 0.1, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);
+
+  const mvp = getMVP();
+  gl.uniformMatrix4fv(uMVP, false, mvp);
+  gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+}
+</script>
+</body>
+</html>
