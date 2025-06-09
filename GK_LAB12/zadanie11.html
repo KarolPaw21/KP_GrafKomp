@@ -188,47 +188,13 @@
             pushMatrix();
             mat4.translate(modelview, modelview, [0, 4.5, 0]);
             mat4.rotateZ(modelview, modelview, -Math.PI/2 - rotateEachFrame);
-                // First blade
-                pushMatrix();
-                mat4.rotateZ(modelview,modelview, 0);
-                mat4.translate(modelview, modelview, [3, 0, 0.5]);
-                vane();
-                popMatrix();
-
-                // Second blade
-                pushMatrix();
-                mat4.rotateZ(modelview,modelview, Math.PI/3);
-                mat4.translate(modelview, modelview, [3, 0, 0.5]);
-                vane();
-                popMatrix();
-
-                // Third blade
-                pushMatrix();
-                mat4.rotateZ(modelview,modelview, 2*Math.PI/3);
-                mat4.translate(modelview, modelview, [3, 0, 0.5]);
-                vane();
-                popMatrix();
-
-                // Fourth blade
-                pushMatrix();
-                mat4.rotateZ(modelview,modelview, Math.PI);
-                mat4.translate(modelview, modelview, [3, 0, 0.5]);
-                vane();
-                popMatrix();
-
-                // Fifth blade
-                pushMatrix();
-                mat4.rotateZ(modelview,modelview, 4*Math.PI/3);
-                mat4.translate(modelview, modelview, [3, 0, 0.5]);
-                vane();
-                popMatrix();
-
-                // Sixth blade
-                pushMatrix();
-                mat4.rotateZ(modelview,modelview, 5*Math.PI/3);
-                mat4.translate(modelview, modelview, [3, 0, 0.5]);
-                vane();
-                popMatrix();
+                for (let i = 0; i < 7; i++) {
+    pushMatrix();
+    mat4.rotateZ(modelview, modelview, i * 2 * Math.PI / 7);
+    mat4.translate(modelview, modelview, [3, 0, 0.5]);
+    vane();
+    popMatrix();
+}
             popMatrix();
 
             pushMatrix();
