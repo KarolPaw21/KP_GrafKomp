@@ -20,7 +20,7 @@
   const texture = gl.createTexture();
  const image = new Image();
   image.crossOrigin = "anonymous"; // <-- to nie zadziała z file://
-  image.src = "metal003.gif"; // <-- ścieżka do pliku z teksturą
+  image.src = "earth.jpg"; // <-- ścieżka do pliku z teksturą
   
   image.onload = function () {
     gl.bindTexture(gl.TEXTURE_2D, texture);
